@@ -1,0 +1,6 @@
+Put stuff that needs to be done here or just general suggestions
+
+
+database
+lockdown
+lock / unlock commands (supporting text, voice and forum channels)
