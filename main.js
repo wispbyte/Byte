@@ -17,7 +17,8 @@ const client = new Client({
 	],
 });
 
-client.config = require('./utilities/config.json'); // Accessible through client.config anywhere where you can access the client
+client.config = require('./utilities/config.json'); 
+client.cemojis = require('./utilities/emojis.json');
 client.commands = new Collection();
 fs.readdirSync('./commands').forEach(command => {
 	const commandData = require(`./commands/${command}`);
