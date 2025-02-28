@@ -17,7 +17,7 @@ const client = new Client({
 	],
 });
 
-client.config = require('./utilities/config.json'); 
+client.config = require('./utilities/config.json');
 client.cemojis = require('./utilities/emojis.json');
 client.commands = new Collection();
 fs.readdirSync('./commands').forEach(command => {
@@ -43,7 +43,7 @@ fs.readdirSync('./events').forEach(event => {
 client.components = {};
 
 fs.readdirSync('./components').forEach(componentType => {
-	console.log(`Loading component: ${componentType}`);  
+	console.log(`Loading component: ${componentType}`);
 	client.components[componentType] = new Collection();
 	fs.readdirSync(`./components/${componentType}`).forEach(component => {
 		const componentData = require(`./components/${componentType}/${component}`);
@@ -51,7 +51,7 @@ fs.readdirSync('./components').forEach(componentType => {
 			console.error(`Missing values in ${componentType} ${component}`);
 			process.exit();
 		}
-		console.log(`Loaded ${componentType}: ${componentData.customId}`);  
+		console.log(`Loaded ${componentType}: ${componentData.customId}`);
 		client.components[componentType].set(componentData.customId, componentData);
 	});
 });
