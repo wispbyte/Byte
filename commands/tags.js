@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const fs = require('fs');
-const config = require('../utilities/config.json')
 
 const TAGS_FILE = './utilities/tags.json';
 let tags = JSON.parse(fs.readFileSync(TAGS_FILE, 'utf8'));
@@ -49,11 +48,9 @@ module.exports = {
             sub.setName('delete').setDescription('Delete a tag')
                 .addStringOption(opt => opt.setName('name').setDescription('Tag to delete').setRequired(true).setAutocomplete(true))
         ),
+	mod: true,
 
     async execute(interaction) {
-        if (!config.moderators.includes(interaction.user.id)) {
-            return interaction.reply({ content: '❌ You do not have permission to use this command.', ephemeral: true });
-        }
 
         const subcommand = interaction.options.getSubcommand();
         const tagName = interaction.options.getString('name')?.toLowerCase();
