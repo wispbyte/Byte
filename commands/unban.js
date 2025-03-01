@@ -18,7 +18,7 @@ module.exports = {
 		let member = interaction.options.getUser('member');
 		if (!member) return interaction.reply({ content: 'This user does not exist', flags: 'Ephemeral' });
 		const isbanned = interaction.guild.bans.fetch(member).catch((err) => {/* */ });
-		if (!isbanned) return interaction.reply({ content: 'That member is not currently banned' });
+		if (!isbanned) return interaction.reply({ content: 'That member is not banned' });
 
 		const reason = interaction.options.getString('reason') ?? 'No reason provided';
 		await interaction.deferReply();
