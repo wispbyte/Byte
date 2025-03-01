@@ -76,7 +76,7 @@ module.exports = {
             tags[tagName] = {
                 title: interaction.options.getString('title'),
                 description: interaction.options.getString('description'),
-                footer: interaction.options.getString('footer') || 'WispByte',
+                footer: interaction.options.getString('footer') || 'WispByte - Most companies prefer to charge money, we prefer to offer a byte of possibility',
                 footer_image: interaction.options.getString('footer_image') || 'https://i.imgur.com/3x6bom0.png',
                 color: interaction.options.getString('color') || '#ed1b24',
                 thumbnail: interaction.options.getString('thumbnail') || '',
