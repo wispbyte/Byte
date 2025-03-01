@@ -1,3 +1,5 @@
+require('#log');
+
 module.exports = {
 	name: 'interactionCreate',
 	/**
@@ -26,16 +28,15 @@ module.exports = {
 		else if (interaction.isButton()) {
 			const baseCustomId = interaction.customId.split('_')[0];
 
-			console.log(`Button interaction detected with customId: ${baseCustomId}`);
+			console.log(`Button interaction detected with customId: ${baseCustomId}`, 'v');
 			const button = client.components.buttons.get(baseCustomId);
 
 			if (!button) {
-				console.log(`No button found with customId: ${baseCustomId}`);
 				return;
 			}
 
 			try {
-				console.log(`Executing button interaction with customId: ${interaction.customId}`);
+				console.log(`Executing button interaction with customId: ${interaction.customId}`, 'v');
 				await button.execute(interaction, client);
 			}
 			catch (err) {
@@ -47,17 +48,16 @@ module.exports = {
 		}
 		else if (interaction.isModalSubmit()) {
 			const baseCustomId = interaction.customId.split('_')[0];
-			console.log(`Modal interaction detected with customId: ${baseCustomId}`);
+			console.log(`Modal interaction detected with customId: ${baseCustomId}`, 'v');
 
 			const modal = client.components.modals.get(baseCustomId);
 
 			if (!modal) {
-				console.log(`No modal found with base customId: ${baseCustomId}`);
 				return;
 			}
 
 			try {
-				console.log(`Executing modal with customId: ${interaction.customId}`);
+				console.log(`Executing modal with customId: ${interaction.customId}`, 'v');
 				await modal.execute(interaction, client);
 			}
 			catch (err) {
@@ -69,17 +69,16 @@ module.exports = {
 		}
 		else if (interaction.isAnySelectMenu()) {
 			const baseCustomId = interaction.customId.split('_')[0];
-			console.log(`Select menu interaction detected with customId: ${baseCustomId}`);
+			console.log(`Select menu interaction detected with customId: ${baseCustomId}`, 'v');
 
 			const select = client.components.selectmenu.get(baseCustomId);
 
 			if (!select) {
-				console.log(`No select menu found with customId: ${baseCustomId}`);
 				return;
 			}
 
 			try {
-				console.log(`Executing select menu with customId: ${interaction.customId}`);
+				console.log(`Executing select menu with customId: ${interaction.customId}`, 'v');
 				await select.execute(interaction, client);
 			}
 			catch (err) {
@@ -93,12 +92,12 @@ module.exports = {
 			const command = client.commands.get(interaction.commandName);
 
 			if (!command || !command.autocomplete) {
-				console.log(`No autocomplete handler found for command: ${interaction.commandName}`);
+				console.log(`No autocomplete handler found for command: ${interaction.commandName}`, 'v');
 				return;
 			}
 
 			try {
-				console.log(`Executing autocomplete for command: ${interaction.commandName}`);
+				console.log(`Executing autocomplete for command: ${interaction.commandName}`, 'v');
 				await command.autocomplete(interaction, client);
 			}
 			catch (err) {

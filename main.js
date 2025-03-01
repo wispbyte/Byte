@@ -1,6 +1,7 @@
 const { Client, Collection } = require('discord.js');
 const fs = require('fs');
 require('dotenv').config({ path: './utilities/.env' });
+require('#log');
 if (!fs.existsSync('./utilities/commands.json')) fs.writeFileSync('./utilities/commands.json', '[]', 'utf-8');
 
 const client = new Client({
@@ -43,7 +44,7 @@ fs.readdirSync('./events').forEach(event => {
 client.components = {};
 
 fs.readdirSync('./components').forEach(componentType => {
-	console.log(`Loading component: ${componentType}`);
+	console.log(`Loading component: ${componentType}`, 'v');
 	client.components[componentType] = new Collection();
 	fs.readdirSync(`./components/${componentType}`).forEach(component => {
 		const componentData = require(`./components/${componentType}/${component}`);
@@ -51,7 +52,7 @@ fs.readdirSync('./components').forEach(componentType => {
 			console.error(`Missing values in ${componentType} ${component}`);
 			process.exit();
 		}
-		console.log(`Loaded ${componentType}: ${componentData.customId}`);
+		console.log(`Loaded ${componentType}: ${componentData.customId}`, 'v');
 		client.components[componentType].set(componentData.customId, componentData);
 	});
 });

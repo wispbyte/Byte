@@ -19,6 +19,9 @@ module.exports = {
 		await interaction.reply({ content: `You selected: **${selectedOption}**`, flags: MessageFlags.Ephemeral });
 	},
 
+	/**
+	 * @param {import('discord.js').AutocompleteInteraction} interaction
+	 */
 	async autocomplete(interaction) {
 		const focusedValue = interaction.options.getFocused();
 		const options = ['Option 1', 'Option 2', 'Sex'];
