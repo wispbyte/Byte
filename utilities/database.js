@@ -23,9 +23,9 @@ function runqueries() {
 	db.close();
 }
 
-/* setInterval(() => {
+setInterval(() => {
 	if (queries.length > 0 && running == false) { runqueries(); }
-}, 20000); */
+}, 20000);
 
 
 
