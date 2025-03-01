@@ -124,10 +124,8 @@ module.exports.write = (table, columns, values) => {
  * @returns {Promise<any>[]}
  */
 module.exports.writeMultiple = (querylist) => {
-	console.log(querylist);
 	for (let i = 0; i < querylist.length; i++) {
 		querylist[i] = new Promise(async resolve => {
-			console.log(`INSERT INTO ${querylist[i].table} (${typeof querylist[i].columns === 'string' ? querylist[i].columns : querylist[i].columns.join(', ')}) VALUES (${typeof querylist[i].values === 'string' ? `"${querylist[i].values}"` : querylist[i].values.map(v => `"${v}"`).join(', ')})`);
 			queries.push([`INSERT INTO ${querylist[i].table} (${typeof querylist[i].columns === 'string' ? querylist[i].columns : querylist[i].columns.join(', ')}) VALUES (${typeof querylist[i].values === 'string' ? `"${querylist[i].values}"` : querylist[i].values.map(v => `"${v}"`).join(', ')})`, 'run', resolve]);
 		});
 	}
