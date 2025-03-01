@@ -23,9 +23,9 @@ function runqueries() {
 	db.close();
 }
 
-setInterval(() => {
+/* setInterval(() => {
 	if (queries.length > 0 && running == false) { runqueries(); }
-}, 20000);
+}, 20000); */
 
 
 
@@ -49,6 +49,8 @@ module.exports.raw = (query, type) => {
  *
  * @typedef {'moderator'|'time'|'action'|'user'|'reason'|'expirationDate'|'duration'} ModLogColumns
  * @typedef {'channelId'|'lockdown'|'originalPermissions'} LockdownColumns
+ *
+ * @typedef {ModLogColumns | LockdownColumns | string} AllColumns
  *
  * @typedef {{ column: (ModLogColumns | 'rowid' | 'caseId'), filter: string } | { column: ModLogColumns, filter: string }[]} ModLogFilter
  * @typedef {{ column: (LockdownColumns | 'rowid'), filter: string } | { column: LockdownColumns, filter: string }[]} LockdownFilter
@@ -114,6 +116,21 @@ module.exports.write = (table, columns, values) => {
 		queries.push([`INSERT INTO ${table} (${typeof columns === 'string' ? columns : columns.join(', ')}) VALUES (${typeof values === 'string' ? `"${values}"` : values.map(v => `"${v}"`).join(', ')})`, 'run', resolve]);
 		runqueries();
 	});
+};
+
+/**
+ * Writes data for multiple rows
+ * @param {{table: Tables, columns: AllColumns | AllColumns[], values: string | string[]}[]} querylist
+ * @returns {Promise<any>[]}
+ */
+module.exports.writeMultiple = (querylist) => {
+	for (let i = 0; i < querylist.length; i++) {
+		querylist[i] = new Promise(async resolve => {
+			queries.push([`INSERT INTO ${querylist[i].table} (${typeof querylist[i].columns === 'string' ? querylist[i].columns : querylist[i].columns.join(', ')}) VALUES (${typeof querylist[i].values === 'string' ? `"${querylist[i].values}"` : querylist[i].values.map(v => `"${v}"`).join(', ')})`, 'run', resolve]);
+		});
+	}
+	runqueries();
+	return querylist;
 };
 
 /**

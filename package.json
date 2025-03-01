@@ -20,6 +20,7 @@
 	},
 	"imports": {
 		"#database": "./utilities/database.js",
-		"#log": "./utilities/logging.js"
+		"#log": "./utilities/logging.js",
+		"#functions": "./utilities/functions.js"
 	}
 }

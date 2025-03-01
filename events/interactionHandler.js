@@ -14,7 +14,9 @@ module.exports = {
 				throw new Error(`Command not found but triggered: ${interaction.commandName}`);
 			}
 
-			if (command.mod) return interaction.reply({ content: 'You must be a moderator to run this command', flags: 'Ephemeral' });
+			if (!client.config.moderators.includes(interaction.user.id) && !interaction.member?.roles?.cache.some(role => client.config.modRoles.includes(role.id))) return interaction.reply({ content: 'You must be a moderator to run this command', flags: 'Ephemeral' });
+
+
 			try {
 				command.execute(interaction, client);
 			}

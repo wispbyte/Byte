@@ -3,3 +3,4 @@ package-lock.json
 commands.json
 utilities/.env
 .eslintrc.json
+utilities/db.sqlite
