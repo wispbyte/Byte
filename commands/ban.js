@@ -28,7 +28,6 @@ module.exports = {
 		const reason = interaction.options.getString('reason') ?? 'No reason provided';
 		const clearMessages = parseTime(interaction.options.getString('delete-messages')) ?? 604800;
 		if (clearMessages > 604800) return interaction.reply({ content: 'I cannot delete messages older than 2 weeks', flags: 'Ephemeral' });
-		const now = Date.now();
 		await interaction.deferReply();
 
 
@@ -40,7 +39,8 @@ module.exports = {
 				embeds: [
 					new EmbedBuilder()
 						.setAuthor({ name: interaction.user.username, iconURL: interaction.member.displayAvatarURL() })
-						.setDescription(`${member.displayName ?? member} has been banned`),
+						.setDescription(`${member.displayName ?? member} has been banned`)
+						.setColor('DarkBlue'),
 				],
 			});
 		}
