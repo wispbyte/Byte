@@ -4,7 +4,7 @@ This file will try to explain how to use the database with examples
 In these functions I have put in autocomplete for vscode for the tables and columns where possible, these are all manually added
 though so if any are ever missing then please do notify Bob.
 
-Do note that all values with the exception of empty cells and the caseId column in moderationLog are always strings.
+Do note that all values with the exception of empty cells are always strings.
 
 Where it says that for an argument you can pass in a value or an array of that value, you can still pass in an array of one value
 and it will work the same.

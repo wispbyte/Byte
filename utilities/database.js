@@ -52,7 +52,7 @@ module.exports.raw = (query, type) => {
  *
  * @typedef {ModLogColumns | LockdownColumns | string} AllColumns
  *
- * @typedef {{ column: (ModLogColumns | 'rowid' | 'caseId'), filter: string } | { column: ModLogColumns, filter: string }[]} ModLogFilter
+ * @typedef {{ column: (ModLogColumns | 'rowid'), filter: string } | { column: ModLogColumns, filter: string }[]} ModLogFilter
  * @typedef {{ column: (LockdownColumns | 'rowid'), filter: string } | { column: LockdownColumns, filter: string }[]} LockdownFilter
  */
 
