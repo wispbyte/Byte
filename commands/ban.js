@@ -46,6 +46,7 @@ module.exports = {
 		}
 		catch (err) {
 			interaction.followUp({ content: 'There was an issue while banning this member', embeds: [{ description: `\`\`\`${err}\`\`\``, color: '15548997' }] });
+			console.error(err);
 		}
 	},
 };

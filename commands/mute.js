@@ -18,11 +18,7 @@ module.exports = {
 	 */
 	async execute(interaction, client) {
 		let member = interaction.options.getMember('member');
-		if (!member) {
-			const user = interaction.options.getUser('member');
-			if (!user) return interaction.reply({ content: 'This user does not exist', flags: 'Ephemeral' });
-			member = (await interaction.guild.members.fetch(user.id).catch(() => { /* */ })) ?? user.id;
-		}
+		if (!member) return interaction.reply({ content: 'This user does not exist', flags: 'Ephemeral' });
 		if (typeof member === 'string' || !member.moderatable || client.config.moderators.includes(member.id) || member.roles?.cache?.some(role => client.config.modRoles.includes(role?.id))) {
 			return interaction.reply({ content: 'I do not have permission to timeout this member', flags: 'Ephemeral' });
 		}
@@ -43,12 +39,13 @@ module.exports = {
 				embeds: [
 					new EmbedBuilder()
 						.setAuthor({ name: interaction.user.username, iconURL: interaction.member.displayAvatarURL() })
-						.setDescription(`${member.displayName ?? member} has been timed out for ${interaction.options.getString('duration')}`),
+						.setDescription(`${member.displayName} has been timed out for ${interaction.options.getString('duration')}`),
 				],
 			});
 		}
 		catch (err) {
 			interaction.followUp({ content: 'There was an issue while timing out this member', embeds: [{ description: `\`\`\`${err}\`\`\``, color: '15548997' }] });
+			console.error(err);
 		}
 	},
 };
