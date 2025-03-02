@@ -1,4 +1,5 @@
 const sqlite = require('sqlite3');
+require('#log');
 
 const queries = [];
 let running = false;
@@ -12,6 +13,7 @@ function runqueries() {
 	const db = new sqlite.Database('./utilities/db.sqlite');
 	db.serialize(async () => {
 		queri.map(q => {
+			console.log(q[0], 'v');
 			db[q[1]](q[0], (err, rows) => {
 				if (err) console.error(err);
 				q[2](q[1] == 'run' ? this.changes : rows);
