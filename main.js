@@ -4,8 +4,6 @@ require('dotenv').config({ path: './utilities/.env' });
 require('#log');
 if (!fs.existsSync('./utilities/commands.json')) fs.writeFileSync('./utilities/commands.json', '[]', 'utf-8');
 
-console.warn("Don't forget to put original config.json file back!");
-
 /**
  * @typedef {Object} BotConfig
  * @property {string[]} moderators
