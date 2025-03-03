@@ -4,6 +4,27 @@ require('dotenv').config({ path: './utilities/.env' });
 require('#log');
 if (!fs.existsSync('./utilities/commands.json')) fs.writeFileSync('./utilities/commands.json', '[]', 'utf-8');
 
+console.warn("Don't forget to put original config.json file back!");
+
+/**
+ * @typedef {Object} BotConfig
+ * @property {string[]} moderators
+ * @property {string[]} modRoles
+ * 
+ * @typedef {Object} BotEmoji
+ * @property {string} emoji
+ * @property {string} id
+ * 
+ * @typedef { {system: Collection<string, BotEmoji>} } BotEmojis
+ * 
+ * @typedef {Client & { config: BotConfig, commands: Collection<string, SlashCommandData>, cemojis: BotEmojis, components: Collection<string, Collection<string, ComponentData> } } ByteClient
+ * 
+ * @typedef { { data: import("discord.js").SlashCommandBuilder, execute: (interaction: import("discord.js").ChatInputCommandInteraction, client: ByteClient ) => import('discord.js').Awaitable<void> } } SlashCommandData
+ * 
+ * @typedef { { customId: string; execute: (interaction: import("discord.js").ChatInputCommandInteraction, client: ByteClient ) => import('discord.js').Awaitable<void> } } ComponentData
+ */
+
+/** @type {ByteClient} */
 const client = new Client({
 	intents: [
 		'MessageContent',
@@ -41,11 +62,11 @@ fs.readdirSync('./events').forEach(event => {
 	client[eventData.once ? 'once' : 'on'](eventData.name, (...args) => eventData.execute(...args, client));
 });
 
-client.components = {};
+client.components = new Collection();
 
 fs.readdirSync('./components').forEach(componentType => {
 	console.log(`Loading component: ${componentType}`, 'v');
-	client.components[componentType] = new Collection();
+	client.components.set(componentType, new Collection());
 	fs.readdirSync(`./components/${componentType}`).forEach(component => {
 		const componentData = require(`./components/${componentType}/${component}`);
 		if (!componentData.customId || !componentData.execute) {
@@ -53,7 +74,7 @@ fs.readdirSync('./components').forEach(componentType => {
 			process.exit();
 		}
 		console.log(`Loaded ${componentType}: ${componentData.customId}`, 'v');
-		client.components[componentType].set(componentData.customId, componentData);
+		client.components.get(componentType).set(componentData.customId, componentData);
 	});
 });
 
