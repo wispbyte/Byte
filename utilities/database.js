@@ -26,11 +26,9 @@ const pool = mySql.createPool({
  */
 module.exports.query = async(sql, params, type = "execute") => {
 	const method = type === "query" ? pool.query : pool.execute;
-	console.log(sql);
+	//console.log(sql);
 
-	const id = console.stopwatch(`Query time: %t`);
 	const [results] = await method.call(pool, sql, params);
-	console.stopwatchEnd(id);
 	return results;
 }
 
