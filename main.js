@@ -8,17 +8,17 @@ if (!fs.existsSync('./utilities/commands.json')) fs.writeFileSync('./utilities/c
  * @typedef {Object} BotConfig
  * @property {string[]} moderators
  * @property {string[]} modRoles
- * 
+ *
  * @typedef {Object} BotEmoji
  * @property {string} emoji
  * @property {string} id
- * 
+ *
  * @typedef { {system: Collection<string, BotEmoji>} } BotEmojis
- * 
+ *
  * @typedef {Client & { config: BotConfig, commands: Collection<string, SlashCommandData>, cemojis: BotEmojis, components: Collection<string, Collection<string, ComponentData> } } ByteClient
- * 
+ *
  * @typedef { { data: import("discord.js").SlashCommandBuilder, execute: (interaction: import("discord.js").ChatInputCommandInteraction, client: ByteClient ) => import('discord.js').Awaitable<void> } } SlashCommandData
- * 
+ *
  * @typedef { { customId: string; execute: (interaction: import("discord.js").ChatInputCommandInteraction, client: ByteClient ) => import('discord.js').Awaitable<void> } } ComponentData
  */
 

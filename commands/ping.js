@@ -1,5 +1,6 @@
 const { formatTime } = require('#functions');
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
+const { timeToString } = require('#functions');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -13,7 +14,7 @@ module.exports = {
 	async execute(interaction, client) {
 		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 		const uptime = process.uptime();
-		const formattedTime = formatTime(Math.floor(uptime) * 1000, "%dd %hh %mm %ss");
+		const formattedTime = formatTime(Math.floor(uptime) * 1000, '%dd %hh %mm %ss');
 
 		const memoryUsageMb = (process.memoryUsage().rss / 1024 / 1024).toFixed(1);
 
@@ -38,8 +39,8 @@ module.exports = {
 						value: `> \`${memoryUsageMb}MB\``,
 						inline: true,
 					},
-				]).setFooter({ iconURL: interaction.inGuild() ? interaction.guild.iconURL() : undefined, text: 'WispByte' })
-			]
+				]).setFooter({ iconURL: interaction.inGuild() ? interaction.guild.iconURL() : undefined, text: 'WispByte' }),
+			],
 		});
 	},
 };

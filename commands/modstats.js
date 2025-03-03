@@ -29,7 +29,7 @@ module.exports = {
 
 		for (let i = 0; i < actions.length; i++) {
 			const action = actions[i];
-			const time = (Date.now() - Number(action.time)) / 1000; //put back into seconds
+			const time = (Date.now() - Number(action.time)) / 1000; // put back into seconds
 			if (time < 86400) {
 				stuff[action.action][0]++;
 				stuff[action.action][1]++;
