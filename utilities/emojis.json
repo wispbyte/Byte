@@ -1,7 +1,0 @@
-{
-    "system": {
-        "latency": { "emoji": "🔌", "id": "🔌" },
-        "uptime": { "emoji": "🕜", "id": "🕜" },
-        "memory": { "emoji": "💽", "id": "💽" }
-    }
-}
