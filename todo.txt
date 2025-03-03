@@ -1,2 +1,4 @@
 Put stuff that needs to be done here or just general suggestions
 
+Modlogs command - see punishments that a user has received
+A user info command - would show what Dyno already does + a status field, having either "banned" (if user is currently banned), "muted" (if muted), or "server member", if they don't have any of these, then this field shouldn't be included)
