@@ -1,2 +1,2 @@
-# Byte
-WispByte's ChatBot &amp; Moderation-tool for Discord
+# Hello losers
+If youre not me (melo) do NOT change anything
