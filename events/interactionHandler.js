@@ -4,7 +4,7 @@ module.exports = {
 	name: 'interactionCreate',
 	/**
      * @param {import('discord.js').Interaction} interaction
-     * @param {import('discord.js').Client} client
+     * @param {import('../main').ByteClient} client
      */
 	async execute(interaction, client) {
 		if (interaction.isChatInputCommand()) {
@@ -14,8 +14,10 @@ module.exports = {
 				throw new Error(`Command not found but triggered: ${interaction.commandName}`);
 			}
 
-			if (!client.config.moderators.includes(interaction.user.id) && !interaction.member?.roles?.cache.some(role => client.config.modRoles.includes(role.id))) return interaction.reply({ content: 'You must be a moderator to run this command', flags: 'Ephemeral' });
-
+			if (command.mod && interaction.inGuild()){
+				const member = await interaction.guild.members.fetch(interaction.member.id); //Making sure the member is fetched so that it's not an ApiGuildMember.
+				if (!client.config.modRoles.find(role => member.roles.resolve(role) !== null)) return interaction.reply({ content: "You must be a moderator to run this command", flags: "Ephemeral" });
+			}
 
 			try {
 				command.execute(interaction, client);
