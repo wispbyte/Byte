@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, GuildMember } = require('discord.js');
 const db = require('#database');
 
 module.exports = {
@@ -24,7 +24,7 @@ module.exports = {
 		await interaction.deferReply();
 
 		try {
-			member.timeout(0, reason);
+			interaction.guild.bans.remove(member, reason);
 			await db.write('moderationLog', ['action', 'moderator', 'reason', 'time', 'user'], ['unban', interaction.user.id, reason, `${Date.now()}`, member.id]);
 
 			interaction.editReply({
