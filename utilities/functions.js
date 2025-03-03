@@ -259,8 +259,7 @@ class ChannelLocking {
 	 * @param {ChatInputCommandInteraction?} interaction An optional (deferred) interaction object to keep updated with the lockdown status. Note that invalid input errors won't be displayed on the reply message.
 	 */
 	static async enterLockdown(guild, duration, interaction){
-        console.warn("Make sure to change duration condition back to 60 * 5.");
-		if (duration && duration < 1 * 5){
+		if (duration && duration < 60 * 5){
 			throw new Error("Server cannot be on lockdown for less than 5 minutes.");
 		} else if (await ChannelLocking.isAnyChannelUnderLockdown()){
 			throw new Error("Server is already under lockdown.");

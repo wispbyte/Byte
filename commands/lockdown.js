@@ -61,8 +61,7 @@ async function executeLockdownStart(interaction) {
 
     const durationArg = interaction.options.getString("duration", false);
     const duration = durationArg ? parseTime(durationArg) : undefined;
-    console.warn("Make sure to change duration condition back to 60 * 5.");
-    if (duration < 1 * 5){ //who is going to lockdown the server for that short amount of time? Even 5 minutes is short, but whatever.
+    if (duration < 60 * 5){ //who is going to lockdown the server for that short amount of time? Even 5 minutes is short, but whatever.
         await interaction.editReply({
             embeds: [new EmbedBuilder()
                 .setDescription("The server cannot be under lockdown for less than 5 minutes.")
