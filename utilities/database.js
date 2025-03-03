@@ -1,49 +1,38 @@
-const sqlite = require('sqlite3');
+const mySql = require("mysql2/promise");
 require('#log');
 
-const queries = [];
-let running = false;
-
-function runqueries() {
-	if (running) return;
-	if (queries.length === 0) throw 'Run queries function was executed but there are no queries to be executed';
-	running = true;
-
-	let queri = queries.splice(0);
-	const db = new sqlite.Database('./utilities/db.sqlite');
-	db.serialize(async () => {
-		queri.map(q => {
-			console.log(q[0], 'v');
-			db[q[1]](q[0], (err, rows) => {
-				if (err) console.error(err);
-				q[2](q[1] == 'run' ? this.changes : rows);
-			});
-		});
-	});
-
-	db.on('close', () => running = false);
-	db.close();
-}
-
-setInterval(() => {
-	if (queries.length > 0 && running == false) { runqueries(); }
-}, 20000);
-
-
-
+const pool = mySql.createPool({
+	host: process.env.dbhost,
+	user: process.env.dbuser,
+	password: process.env.dbpassword,
+	database: process.env.dbschema
+});
 
 /**
- * This lets you directly run SQL queries if you need something specific
- * @param {string} query - SQL query to run
- * @param {'all'|'exec'|'get'|'run'} type - The type of query being run, if you don't know what one to use then just use 'all'
- * @returns {Promise<any>}
+ * Runs a raw SQL query in the database and returns its results.
+ * 
+ * Example:
+ * 
+ * ```javascript
+ * const db = require("#database");
+ * 
+ * const moderationId = 1; //example moderation ID.
+ * const rows = db.query("SELECT * FROM moderationlog WHERE id = ?", [moderationId]);
+ * ```
+ * @param {string} sql SQL query string
+ * @param {any} params SQL query string parameters.
+ * @param {"execute" | "query"} [type] **SELECT, UPDATE, DELETE**: use `execute` since mySql will be prepared and safe for the request. Use `query` for **dynamic** and bulk **INSERT** and **UPDATE** queries.
+ * @returns {Promise<mySql.QueryResult>} SQL query result in the database, in case of SELECT, it returns the rows.
  */
-module.exports.raw = (query, type) => {
-	return new Promise(async resolve => {
-		queries.push([query, type, resolve]);
-		runqueries();
-	});
-};
+module.exports.query = async(sql, params, type = "execute") => {
+	const method = type === "query" ? pool.query : pool.execute;
+	console.log(sql);
+
+	const id = console.stopwatch(`Query time: %t`);
+	const [results] = await method.call(pool, sql, params);
+	console.stopwatchEnd(id);
+	return results;
+}
 
 
 /**
@@ -54,8 +43,10 @@ module.exports.raw = (query, type) => {
  *
  * @typedef {ModLogColumns | LockdownColumns | string} AllColumns
  *
- * @typedef {{ column: (ModLogColumns | 'rowid'), filter: string } | { column: ModLogColumns, filter: string }[]} ModLogFilter
- * @typedef {{ column: (LockdownColumns | 'rowid'), filter: string } | { column: LockdownColumns, filter: string }[]} LockdownFilter
+ * @typedef {{ column: (ModLogColumns | 'id'), filter: string } | { column: ModLogColumns, filter: string }[]} ModLogFilter
+ * @typedef {{ column: (LockdownColumns | 'id'), filter: string } | { column: LockdownColumns, filter: string }[]} LockdownFilter
+ * 
+ * @typedef {string | bigint | number | boolean | object} DatabaseAcceptableValues
  */
 
 
@@ -65,21 +56,21 @@ module.exports.raw = (query, type) => {
  * @param {T} table - The table you want to fetch from. If the autocomplete for tables is not up to date then please let bob know
  * @param {T extends 'moderationLog' ? ModLogFilter : T extends 'lockdown' ? LockdownFilter : { column: string, filter: string } | { column: string, filter: string }[]} [filter={}] - An object of the filters you want to apply
  * @param {T extends 'moderationLog' ? ModLogColumns | ModLogColumns[] : T extends 'lockdown' ? LockdownColumns | LockdownColumns[] : (string | string[] | "*")} [columns="*"] - The columns to fetch data from, leave blank or use '*' to select all columns
+ * @param {number?} [limit]
  * @returns {Promise<Array>}
  */
-module.exports.get = (table, filter = {}, columns = '*') => {
-	let filters = '';
-	if (Array.isArray(filter) && filter.length > 0) {
-		filters = ` WHERE ${filter.map(f => `${f.column} = "${f.filter}"`).join(' AND ')}`;
-	}
-	else if (filter && filter.filter && filter.column) {
-		filters = ` WHERE ${filter.column} = "${filter.filter}"`;
+module.exports.get = async(table, filter = {}, columns = '*', limit = null) => {
+	let filters = Object.keys(filter).length > 0 ? ` WHERE ${serializeDbFilters(filter)}` : "";
+
+	if (limit){
+		filters += ` LIMIT ${limit}`;
 	}
 
-	return new Promise(async resolve => {
-		queries.push([`SELECT ${columns} FROM ${table}${filters}`, 'all', resolve]);
-		runqueries();
-	});
+	if (typeof(columns) !== "string"){
+		columns = columns.join(", ");
+	}
+
+	return await this.query(`SELECT ${columns} FROM ${table}${filters}`);
 };
 
 /**
@@ -90,85 +81,63 @@ module.exports.get = (table, filter = {}, columns = '*') => {
  * @param {T extends 'moderationLog' ? ModLogColumns | ModLogColumns[] : T extends 'lockdown' ? LockdownColumns | LockdownColumns[] : (string | string[] | "*")} [columns="*"] - The columns to fetch data from, leave blank or use '*' to select all columns
  * @returns {Promise<any>}
  */
-module.exports.getOne = (table, filter = {}, columns = '*') => {
-	let filters = '';
-	if (Array.isArray(filter) && filter.length > 0) {
-		filters = ` WHERE ${filter.map(f => `${f.column} = "${f.filter}"`).join(' AND ')}`;
-	}
-	else if (filter && filter.filter && filter.column) {
-		filters = ` WHERE ${filter.column} = "${filter.filter}"`;
-	}
-
-	return new Promise(async resolve => {
-		queries.push([`SELECT ${columns} FROM ${table}${filters}`, 'get', resolve]);
-		runqueries();
-	});
-};
+module.exports.getOne = async(table, filter, columns) => (await this.get(table, filter, columns, 1)).at(0);
 
 /**
  * Write data to a new row
  * @template {Tables} T
  * @param {T} table - The table you want to write to. If the autocomplete for tables is not up to date then please let bob know
  * @param {T extends 'moderationLog' ? ModLogColumns | ModLogColumns[] : T extends 'lockdown' ? LockdownColumns | LockdownColumns[] : (string | string[])} columns
- * @param {string[]} values
- * @returns {Promise<any>}
+ * @param {DatabaseAcceptableValues | DatabaseAcceptableValues[]} values
+ * @returns {Promise<mySql.QueryResult>}
  */
-module.exports.write = (table, columns, values) => {
-	return new Promise(async resolve => {
-		queries.push([`INSERT INTO ${table} (${typeof columns === 'string' ? columns : columns.join(', ')}) VALUES (${typeof values === 'string' ? `"${values}"` : values.map(v => `"${v}"`).join(', ')})`, 'run', resolve]);
-		runqueries();
-	});
+module.exports.write = async(table, columns, values) => {
+	const columnString = typeof(columns) === "string" ? columns : columns.join(", ");
+	const convertedValues = serializeDbAcceptableValue(values);
+
+	return await this.query(`INSERT INTO ${table} (${columnString}) VALUES (${convertedValues})`);
 };
 
-/**
- * Writes data for multiple rows
- * @param {{table: Tables, columns: AllColumns | AllColumns[], values: string | string[]}[]} querylist
- * @returns {Promise<any>[]}
- */
-module.exports.writeMultiple = (querylist) => {
-	for (let i = 0; i < querylist.length; i++) {
-		querylist[i] = new Promise(async resolve => {
-			queries.push([`INSERT INTO ${querylist[i].table} (${typeof querylist[i].columns === 'string' ? querylist[i].columns : querylist[i].columns.join(', ')}) VALUES (${typeof querylist[i].values === 'string' ? `"${querylist[i].values}"` : querylist[i].values.map(v => `"${v}"`).join(', ')})`, 'run', resolve]);
-		});
-	}
-	runqueries();
-	return querylist;
-};
+// /**
+//  * Writes data for multiple rows
+//  * @param {{table: Tables, columns: AllColumns | AllColumns[], values: string | string[]}[]} querylist
+//  * @returns {Promise<any>[]}
+//  */
+// module.exports.writeMultiple = (querylist) => {
+// 	for (let i = 0; i < querylist.length; i++) {
+// 		querylist[i] = new Promise(async resolve => {
+// 			queries.push([`INSERT INTO ${querylist[i].table} (${typeof querylist[i].columns === 'string' ? querylist[i].columns : querylist[i].columns.join(', ')}) VALUES (${typeof querylist[i].values === 'string' ? `"${querylist[i].values}"` : querylist[i].values.map(v => `"${v}"`).join(', ')})`, 'run', resolve]);
+// 		});
+// 	}
+// 	runqueries();
+// 	return querylist;
+// };
 
 /**
  * Update a specific value or set of values
  * @template {Tables} T
  * @param {T} table - The table you want to update to. If the autocomplete for tables is not up to date then please let bob know
  * @param {T extends 'moderationLog' ? ModLogColumns | ModLogColumns[] : T extends 'lockdown' ? LockdownColumns | LockdownColumns[] : (string | string[])} columns
- * @param {string[]} values
- * @param {T extends 'moderationLog' ? ModLogFilter : T extends 'lockdown' ? LockdownFilter : ({ column: string, filter: string } | { column: string, filter: string }[])} filter - An object of the filters you want to apply
+ * @param { DatabaseAcceptableValues | DatabaseAcceptableValues[] } values
+ * @param {T extends 'moderationLog' ? ModLogFilter : T extends 'lockdown' ? LockdownFilter : ({ column: string, filter: DatabaseAcceptableValues } | { column: string, filter: DatabaseAcceptableValues }[])} filter - An object of the filters you want to apply
  * @returns {Promise<any>}
  */
-module.exports.update = (table, columns, values, filter) => {
+module.exports.update = async(table, columns, values, filter) => {
 	let valuelist = '';
-	if (typeof columns === 'string' && typeof values === 'string') {
-		valuelist = `${columns} = "${values}"`;
+	if (typeof columns === 'string') {
+		valuelist = `${columns} = ${serializeDbAcceptableValue(values, false)}`;
 	}
 	else if (Array.isArray(columns) && Array.isArray(values)) {
 		valuelist = [];
 		for (let i = 0; i < columns.length; i++) {
-			valuelist.push(`${columns[i]} = "${values[i]}"`);
+			valuelist.push(`${columns[i]} = ${serializeDbAcceptableValue(values[i], false)}`);
 		}
 		valuelist = valuelist.join(', ');
 	}
 
-	let filters = '';
-	if (Array.isArray(filter) && filter.length > 0) {
-		filters = ` WHERE ${filter.map(f => `${f.column} = "${f.filter}"`).join(' AND ')}`;
-	}
-	else if (filter && filter.filter && filter.column) {
-		filters = ` WHERE ${filter.column} = "${filter.filter}"`;
-	}
+	const filters = ` WHERE ${serializeDbFilters(filter)}`;
 
-	return new Promise(async resolve => {
-		queries.push([`UPDATE ${table} SET ${valuelist}${filters}`, 'run', resolve]);
-		runqueries();
-	});
+	return await this.query(`UPDATE ${table} SET ${valuelist}${filters}`);
 };
 
 
@@ -177,20 +146,60 @@ module.exports.update = (table, columns, values, filter) => {
  * @template {Tables} T
  * @param {T} table - The table you want to delete from. If the autocomplete for tables is not up to date then please let bob know
  * @param {T extends 'moderationLog' ? ModLogFilter : T extends 'lockdown' ? LockdownFilter : { column: string, filter: string } | { column: string, filter: string }[]} filter - An object of the filters you want to apply
- * @returns {Promise<any>}
+ * @returns {Promise<mySql.QueryResult>}
  */
-module.exports.delete = (table, filter) => {
-	let filters = '';
-	if (Array.isArray(filter) && filter.length > 0) {
-		filters = ` WHERE ${filter.map(f => `${f.column} = "${f.filter}"`).join(' AND ')}`;
-	}
-	else if (filter && filter.filter && filter.column) {
-		filters = ` WHERE ${filter.column} = "${filter.filter}"`;
-	}
+module.exports.delete = async(table, filter) => {
+	const filters = Object.keys(filter).length > 0 ? ` WHERE ${serializeDbFilters(filter)}` : "";
 
-
-	return new Promise(async resolve => {
-		queries.push([`DELETE FROM ${table}${filters}`, 'run', resolve]);
-		runqueries();
-	});
+	return await this.query(`DELETE FROM ${table}${filters}`);
 };
+
+
+/**
+ * 
+ * @param {DatabaseAcceptableValues | DatabaseAcceptableValues[]} value 
+ * @param {boolean} [parseArray] Whether to serialize a potential `DatabaseAcceptableValues` array object, if `false`, it'll run `JSON.stringify` on it.
+ * @returns {string}
+ */
+function serializeDbAcceptableValue(value, parseArray = true){
+	let serialized;
+	switch (typeof(value)){
+		case "string":
+			serialized = `"${value}"`;
+			break;
+		case "bigint": //no breaking statement so it does what number case does.
+		case "number":
+			serialized = value;
+			break;
+		case "boolean":
+			serialized = `${value ? 1 : 0}`; //tinyint type, is either 0 (false) or 1 (true).
+			break;
+		case "object":
+			if (Array.isArray(value) && parseArray){
+				serialized = value.map(v => serializeDbAcceptableValue(v, false)).join(", ");
+				break;
+			}
+
+			serialized = `'${JSON.stringify(value)}'`; //using single quotes for JSON to prevent the JSON keys causing issues.
+			break;
+		default: throw new Error("Unexpected values type received: " + typeof(value) + ". Expected either string, bigint, number, boolean or object.");
+	}
+
+	return serialized;
+}
+
+/**
+ * 
+ * @param { {column: string, filter: DatabaseAcceptableValues} | {column: string, filter: DatabaseAcceptableValues}[] } filters 
+ * @returns {string}
+ */
+function serializeDbFilters(filters){
+	let serialized;
+	if (Array.isArray(filters)){
+		serialized = filters.map(f => `${f.column} = ${serializeDbAcceptableValue(f.filter, false)}`).join(' AND ');
+	} else {
+		serialized = `${filters.column} = ${serializeDbAcceptableValue(filters.filter, false)}`;
+	}
+
+	return serialized
+}

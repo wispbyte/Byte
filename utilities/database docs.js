@@ -39,7 +39,7 @@ db.delete('moderationLog', [ { column: 'duration', filter: '3h' }, { column: 'ac
 /*
 
 The database file exports several functions:
-> raw
+> query
 > get
 > getOne
 > write
@@ -50,17 +50,16 @@ The database file exports several functions:
 
 
 /*
- -- db.raw --
+ -- db.query --
 This function quite simply lets you run sql queries directly if you need some little feature not in the other functions
-You have the option to select what type of operation you are going to do from; run, get, all and exec.
+You have the option to select what type of operation you are going to do from; query and execute.
 
-Run would be used for insert, update, delete and other similar statements
-Get would be for selecting a single row
-All would be for selecting multiple rows but can also run other queries
-Exec is for making changes to the database schema, eg create, drop, pragma
+Execute would be used for insert, update, delete and other similar statements
+Query, on the other hand, would be used for bulk insert, update and delete statements, with changes to the table and such.
 
+By default, the function automatically selects execute.
 */
-db.raw('SELECT * FROM moderationLog WHERE moderator = "melo"', 'all');
+db.raw('SELECT * FROM moderationLog WHERE moderator = "melo"', 'execute');
 
 /*
  -- db.get --
@@ -132,7 +131,7 @@ This should overwrite the lockdown status of a channel
 db.update('lockdown', 'lockdown', 'false', { column: 'channelId', filter: '1146442479508402247' });
 
 /*
- -- db.update --
+ -- db.delete --
 Deletes a row or multiple rows from the passed in filter.
 ! If no filter is passed in then the entire table will be deleted !
 
