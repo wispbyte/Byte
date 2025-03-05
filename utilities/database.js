@@ -8,6 +8,11 @@ const pool = mySql.createPool({
 	database: process.env.dbschema,
 });
 
+process.once('SIGINT', async () => {
+	await pool.end();
+	process.exit();
+});
+
 /**
  * Runs a raw SQL query in the database and returns its results.
  *

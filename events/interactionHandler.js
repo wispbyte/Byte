@@ -1,5 +1,7 @@
 require('#log');
 
+const dev = process.argv.some(arg => ['-d', '--dev', '--development'].includes(arg));
+
 module.exports = {
 	name: 'interactionCreate',
 	/**
@@ -14,7 +16,7 @@ module.exports = {
 				throw new Error(`Command not found but triggered: ${interaction.commandName}`);
 			}
 
-			if (command.mod) {
+			if (command.mod && !dev) {
 				if (!interaction.inGuild()) return interaction.reply({ content: 'You must be a moderator to run this command' });
 
 				const member = await interaction.guild.members.fetch(interaction.member.id); // Making sure the member is fetched so that it's not an ApiGuildMember.
