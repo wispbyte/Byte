@@ -37,7 +37,7 @@ module.exports = {
 			const baseCustomId = interaction.customId.split('_')[0];
 
 			console.log(`Button interaction detected with customId: ${baseCustomId}`, 'v');
-			const button = client.components.buttons.get(baseCustomId);
+			const button = client.components.get('buttons').get(baseCustomId);
 
 			if (!button) {
 				return;
@@ -58,7 +58,7 @@ module.exports = {
 			const baseCustomId = interaction.customId.split('_')[0];
 			console.log(`Modal interaction detected with customId: ${baseCustomId}`, 'v');
 
-			const modal = client.components.modals.get(baseCustomId);
+			const modal = client.components.get('modals').get(baseCustomId);
 
 			if (!modal) {
 				return;
@@ -79,7 +79,7 @@ module.exports = {
 			const baseCustomId = interaction.customId.split('_')[0];
 			console.log(`Select menu interaction detected with customId: ${baseCustomId}`, 'v');
 
-			const select = client.components.selectmenu.get(baseCustomId);
+			const select = client.components.get('selectmenu').get(baseCustomId);
 
 			if (!select) {
 				return;
