@@ -8,6 +8,7 @@ if (!fs.existsSync('./utilities/commands.json')) fs.writeFileSync('./utilities/c
  * @typedef {Object} BotConfig
  * @property {string[]} moderators
  * @property {string[]} modRoles
+ * @property {string} prefix
  *
  * @typedef {Object} BotEmoji
  * @property {string} emoji
@@ -15,7 +16,7 @@ if (!fs.existsSync('./utilities/commands.json')) fs.writeFileSync('./utilities/c
  *
  * @typedef { {system: Collection<string, BotEmoji>} } BotEmojis
  *
- * @typedef {Client & { config: BotConfig, commands: Collection<string, SlashCommandData>, cemojis: BotEmojis, components: Collection<string, Collection<string, ComponentData> } } ByteClient
+ * @typedef {Client & { config: BotConfig, commands: Collection<string, SlashCommandData>, cemojis: BotEmojis, components: Collection<string, Collection<string, ComponentData>>, aliases: {} } } ByteClient
  *
  * @typedef { { data: import("discord.js").SlashCommandBuilder, execute: (interaction: import("discord.js").ChatInputCommandInteraction, client: ByteClient ) => import('discord.js').Awaitable<void> } } SlashCommandData
  *
@@ -40,11 +41,26 @@ const client = new Client({
 client.config = require('./utilities/config.json');
 client.cemojis = require('./utilities/emojis.json');
 client.commands = new Collection();
+client.aliases = {};
 fs.readdirSync('./commands').forEach(command => {
 	const commandData = require(`./commands/${command}`);
 	if (!commandData || !commandData.data || !commandData.execute) {
 		console.error(`You are missing something in the command ${command}`);
 		process.exit();
+	}
+	if (commandData.alias) {
+		if (typeof commandData.alias === 'string') {
+			client.aliases[commandData.alias] = commandData.data.name;
+		}
+		else if (Array.isArray(commandData.alias)) {
+			for (let i = 0; i < commandData.alias.length; i++) {
+				client.aliases[commandData.alias[i]] = commandData.data.name;
+			}
+		}
+		else {
+			console.error(`Command ${command} has invalid alias syntax, it should either be a string or an array`);
+			process.exit();
+		}
 	}
 
 	client.commands.set(commandData.data.name, commandData);
