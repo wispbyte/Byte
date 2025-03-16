@@ -17,7 +17,7 @@ module.exports = {
 			}
 
 			if (command.mod && !dev) {
-				if (!interaction.inGuild()) return interaction.reply({ content: 'You must be a moderator to run this command' });
+				if (!interaction.inGuild()) return interaction.reply({ content: 'You must be a moderator to run this command', flags: 'Ephemeral' });
 
 				const member = await interaction.guild.members.fetch(interaction.member.id); // Making sure the member is fetched so that it's not an ApiGuildMember.
 				if (!client.config.modRoles.find(role => member.roles.resolve(role) !== null)) return interaction.reply({ content: 'You must be a moderator to run this command', flags: 'Ephemeral' });
